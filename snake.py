@@ -1,64 +1,62 @@
 from pyMatrix import *
 import pygame
+import random
 
 if __name__ == "__main__":
-    import random
-    COLOUR_BACKGROUND = (100, 100, 100)  # (R, G, B)
-    COLOUR_RED        = (255,   0,   0)
-    COLOUR_GREEN      = (  0, 255,   0)
-    COLOUR_BLUE       = (  0,   0, 255)
-    COLOUR_WHITE      = (255, 255, 255)
-    COLOURS = (COLOUR_RED, COLOUR_GREEN,COLOUR_BLUE, COLOUR_WHITE )
+    COLOUR_BACKGROUND = (100, 100, 100)
+    COLOUR_RED = (255, 0, 0)
+    COLOUR_GREEN = (0, 255, 0)
+    COLOUR_BLUE = (0, 0, 255)
+    COLOUR_WHITE = (255, 255, 255)
+    COLOURS = (COLOUR_RED, COLOUR_GREEN, COLOUR_BLUE, COLOUR_WHITE)
+    direction = (0, 0)  # Start zonder beweging
 
-    def getRandomPos(maxX, maxY, notX = -1, notY = -1):
-        x = random.randint(0,maxX-1)
-        y = random.randint(0,maxY-1)
-        if x == notX or y == notY:
-            return getRandomPos(maxX, maxY, notX, notY)
-        return x,y
-    
-    def change(keys: list, x, y, colour):
-        if 27 in keys:	#esc
-            game.quit()
-        if pygame.K_LEFT in keys:
-            x -= 1
-        elif pygame.K_RIGHT in keys:
-            x += 1
-        elif pygame.K_UP in keys:
-            y -= 1
-        elif pygame.K_DOWN in keys:
-            y += 1
-        elif ord("c") in keys:
-            colour = random.choice(COLOURS)
-        return x, y, colour
-    
-    if True:
-        maxX, maxY  = (32,16)
-        game = pyMatrix(maxX, maxY, colourBackground = COLOUR_BACKGROUND)        
-        posX = maxX // 2
-        posY = maxY // 2
-        objectX, objectY = getRandomPos(maxX, maxY, posX, posY) 
-        moveX, moveY = (1,0)
-        colour = COLOUR_RED
-#       game.showNeoPixelIndex()
-        speed = 10
-        counter = 0
+    def getRandomPos(maxX, maxY, occupied_positions=[]):
         while True:
-            keys = game.getPressedKey()
-            moveX, moveY, colour = change(keys, moveX, moveY, colour)
+            x, y = random.randint(0, maxX - 1), random.randint(0, maxY - 1)
+            if (x, y) not in occupied_positions:
+                return x, y
 
-            if counter % speed == 0 and game.isPosAllowed(posX + moveX, posY + moveY):
-                posX += moveX
-                posY += moveY
-            if objectX == posX and objectY == posY:
-                objectX, objectY = getRandomPos(maxX, maxY, posX, posY)
-                
-            positions =[ (objectX, objectY, COLOUR_GREEN)
-           , (posX, posY, colour)
-           , (posX-1, posY, colour)
-           , (posX, posY, colour)
-           ]
-            
-            game.drawGame (positions )
-            
-            counter += 1
+    def change(keys: list, colour):
+        global direction
+        if 27 in keys:  # ESC
+            pygame.quit()
+            quit()
+        if ord("c") in keys:
+            colour = random.choice(COLOURS)
+        if 1073741905 in keys:  # Down
+            direction = (0, 1)
+        elif 1073741906 in keys:  # Up
+            direction = (0, -1)
+        elif 1073741904 in keys:  # Left
+            direction = (-1, 0)
+        elif 1073741903 in keys:  # Right
+            direction = (1, 0)
+        return colour
+
+    maxX, maxY = (32, 16)
+    game = pyMatrix(maxX, maxY, colourBackground=COLOUR_BACKGROUND, speed=5)
+    posX, posY = maxX // 2, maxY // 2
+    redPositions = [(posX, posY)]
+    colour = COLOUR_RED
+    objectX, objectY = getRandomPos(maxX, maxY, redPositions)
+
+    while True:
+        keys = game.getPressedKey()
+        colour = change(keys, colour)
+        dx, dy = direction
+        nextPosX, nextPosY = posX + dx, posY + dy
+
+        if game.isPosAllowed(nextPosX, nextPosY):
+            if (nextPosX, nextPosY) == (objectX, objectY):
+                redPositions.append((objectX, objectY))
+                objectX, objectY = getRandomPos(maxX, maxY, redPositions)
+            else:
+                # Beweeg de hele slang vooruit als er niet gegroeid hoeft te worden.
+                if direction != (0, 0):  # Voorkom dat de slang beweegt als er geen richting is ingesteld.
+                    redPositions.append((nextPosX, nextPosY))
+                    redPositions.pop(0)
+            posX, posY = nextPosX, nextPosY
+
+        positions = [(objectX, objectY, COLOUR_GREEN)] + [(x, y, colour) for x, y in redPositions]
+        game.drawGame(positions)
