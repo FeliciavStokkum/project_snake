@@ -9,7 +9,7 @@ if __name__ == "__main__":
     COLOUR_BLUE = (0, 0, 255)
     COLOUR_WHITE = (255, 255, 255)
     COLOURS = (COLOUR_RED, COLOUR_GREEN, COLOUR_BLUE, COLOUR_WHITE)
-    direction = (0, 0)  # Start zonder beweging
+    direction = (0, 0)  # Start without movement
 
     def getRandomPos(maxX, maxY, occupied_positions=[]):
         while True:
@@ -35,17 +35,21 @@ if __name__ == "__main__":
         return colour
 
     def PositionAllowed(x, y, maxX, maxY):
-        # Controleer of de positie binnen de grenzen van het scherm valt
+        # Check if the position is within the screen boundaries
         if x < 0 or x >= maxX or y < 0 or y >= maxY:
             return False
         return True
 
+    def checkCollision(posX, posY, snake_positions):
+        # Check if the snake collides with itself
+        return (posX, posY) in snake_positions[1:]
+
     maxX, maxY = (32, 16)
     game = pyMatrix(maxX, maxY, colourBackground=COLOUR_BACKGROUND, speed=5)
     posX, posY = maxX // 2, maxY // 2
-    redPositions = [(posX, posY)]
+    snake_positions = [(posX, posY)]
     colour = COLOUR_RED
-    objectX, objectY = getRandomPos(maxX, maxY, redPositions)
+    objectX, objectY = getRandomPos(maxX, maxY, snake_positions)
 
     while True:
         keys = game.getPressedKey()
@@ -53,20 +57,19 @@ if __name__ == "__main__":
         dx, dy = direction
         nextPosX, nextPosY = posX + dx, posY + dy
 
-        if not PositionAllowed(nextPosX, nextPosY, maxX, maxY):
-            print("Game Over! U Touched the border")  # Of een andere actie om het spel netjes af te sluiten.
+        if not PositionAllowed(nextPosX, nextPosY, maxX, maxY) or (len(snake_positions) > 1 and checkCollision(nextPosX, nextPosY, snake_positions)):
+            print("Game Over! Snake collided with itself")  # Game over message
             pygame.quit()
             quit()
 
         if (nextPosX, nextPosY) == (objectX, objectY):
-            redPositions.append((objectX, objectY))
-            objectX, objectY = getRandomPos(maxX, maxY, redPositions)
+            snake_positions.append((objectX, objectY))
+            objectX, objectY = getRandomPos(maxX, maxY, snake_positions)
         else:
-            if direction != (0, 0):  # Als er een bewegingsrichting is ingesteld
-                redPositions.append((nextPosX, nextPosY))
-                redPositions.pop(0)
+            if direction != (0, 0):  # If there is a movement direction set
+                snake_positions.append((nextPosX, nextPosY))
+                snake_positions.pop(0)
         posX, posY = nextPosX, nextPosY
 
-        positions = [(objectX, objectY, COLOUR_GREEN)] + [(x, y, colour) for x, y in redPositions]
+        positions = [(objectX, objectY, COLOUR_GREEN)] + [(x, y, colour) for x, y in snake_positions]
         game.drawGame(positions)
-        
