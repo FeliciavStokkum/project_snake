@@ -34,6 +34,12 @@ if __name__ == "__main__":
             direction = (1, 0)
         return colour
 
+    def PositionAllowed(x, y, maxX, maxY):
+        # Controleer of de positie binnen de grenzen van het scherm valt
+        if x < 0 or x >= maxX or y < 0 or y >= maxY:
+            return False
+        return True
+
     maxX, maxY = (32, 16)
     game = pyMatrix(maxX, maxY, colourBackground=COLOUR_BACKGROUND, speed=5)
     posX, posY = maxX // 2, maxY // 2
@@ -47,16 +53,20 @@ if __name__ == "__main__":
         dx, dy = direction
         nextPosX, nextPosY = posX + dx, posY + dy
 
-        if game.isPosAllowed(nextPosX, nextPosY):
-            if (nextPosX, nextPosY) == (objectX, objectY):
-                redPositions.append((objectX, objectY))
-                objectX, objectY = getRandomPos(maxX, maxY, redPositions)
-            else:
-                # Beweeg de hele slang vooruit als er niet gegroeid hoeft te worden.
-                if direction != (0, 0):  # Voorkom dat de slang beweegt als er geen richting is ingesteld.
-                    redPositions.append((nextPosX, nextPosY))
-                    redPositions.pop(0)
-            posX, posY = nextPosX, nextPosY
+        if not PositionAllowed(nextPosX, nextPosY, maxX, maxY):
+            print("Game Over! U Touched the border")  # Of een andere actie om het spel netjes af te sluiten.
+            pygame.quit()
+            quit()
+
+        if (nextPosX, nextPosY) == (objectX, objectY):
+            redPositions.append((objectX, objectY))
+            objectX, objectY = getRandomPos(maxX, maxY, redPositions)
+        else:
+            if direction != (0, 0):  # Als er een bewegingsrichting is ingesteld
+                redPositions.append((nextPosX, nextPosY))
+                redPositions.pop(0)
+        posX, posY = nextPosX, nextPosY
 
         positions = [(objectX, objectY, COLOUR_GREEN)] + [(x, y, colour) for x, y in redPositions]
         game.drawGame(positions)
+        
