@@ -6,17 +6,18 @@ else:
     import neopixel
     PIN_DIN = 28
     PIXELS = 512
+    
 import random
 speed_data = 5
 counter = 0
 counter_max = 3
 
 
-COLOUR_BACKGROUND = (100, 100, 100)
-COLOUR_RED = (255, 0, 0)
-COLOUR_GREEN = (0, 255, 0)
-COLOUR_BLUE = (0, 0, 255)
-COLOUR_WHITE = (255, 255, 255)
+COLOUR_BACKGROUND = (0, 0, 0)
+COLOUR_RED = (10, 0, 0)
+COLOUR_GREEN = (0, 10, 0)
+COLOUR_BLUE = (0, 0, 10)
+COLOUR_WHITE = (10, 10, 10)
 COLOURS = (COLOUR_RED, COLOUR_GREEN, COLOUR_BLUE, COLOUR_WHITE)
 direction = (0, 0)  # Start without movement
 
@@ -81,12 +82,12 @@ while True:
         objectX, objectY = getRandomPos(maxX, maxY, snake_positions)
         game = pyMatrix(maxX, maxY, colourBackground=COLOUR_BACKGROUND, speed=random.randint(1, 20)) # ranodm speed
         counter += 1
-        if COLOUR_GREEN == (234, 0, 255): # if paars maak groen fruit
+        if COLOUR_GREEN == (10, 0, 10): # if paars maak groen fruit
             snake_positions.append((objectX, objectY))
             counter += 1
-        COLOUR_GREEN = 0, 255, 0
+        COLOUR_GREEN = 0, 10, 0
         if counter >= counter_max: # counter voor paars fruit
-            COLOUR_GREEN = 234, 0, 255
+            COLOUR_GREEN = 10, 0, 10
             # counter = 0
             counter_max += random.randint(3, 10)
     else:
