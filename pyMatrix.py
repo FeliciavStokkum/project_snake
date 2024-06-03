@@ -346,4 +346,4 @@ if __name__ == "__main__":
                        , (posX, posY, colour)
                        ]
             
-            game.drawGame(positions )
+            game.drawGame(positions)
